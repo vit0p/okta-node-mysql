@@ -1,9 +1,12 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Restaurant } from './restaurant';
 
 @Entity()
 export class FoodDish {
-  @Column()
+  @PrimaryColumn({ generated: 'increment' })
+  id: number;
+
+  @Column({ unique: true })
   name: string;
 
   @Column()

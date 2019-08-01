@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn, Unique } from 'typeorm';
 import { Restaurant } from './restaurant';
 import { User } from './user';
 
 @Entity()
+@Unique(['restaurantId', 'creatorId'])
 export class Rating {
   @PrimaryColumn({ generated: 'increment' })
   id: number;
@@ -11,11 +12,17 @@ export class Rating {
   rating: number;
 
   @Column()
-  text: number;
+  text: string;
+
+  @Column()
+  restaurantId: number;
 
   @ManyToOne(() => Restaurant, restaurant => restaurant.ratings)
-  restaurant: Restaurant;
+  restaurant: Promise<Restaurant>;
+
+  @Column()
+  creatorId: number;
 
   @ManyToOne(() => User, user => user.ratings)
-  creator: User;
+  creator: Promise<User>;
 }

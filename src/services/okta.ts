@@ -33,19 +33,25 @@ export function initializeAuthentication(app: express.Application, port: number)
 const oktaJwtVerifier = new OktaJwtVerifier({
   issuer,
   clientId: process.env.OKTA_CLIENT_ID
-})
+});
 
-export async function requireUser(req: express.Request) {
+export async function authenticateUser(req: express.Request) {
   const { authorization } = req.headers;
   if (!authorization) {
-    throw new JsonErrorResponse({ error: 'You must send an Authorization header' }, { statusCode: 400 });
+    return;
   }
 
   const [authType, token] = authorization.split(' ');
   if (authType !== 'Bearer') {
-    throw new Error('Expected a Bearer token');
+    throw new JsonErrorResponse({ error: 'Expected a Bearer token' }, { statusCode: 400 });
   }
 
   const { claims: { sub } } = await oktaJwtVerifier.verifyAccessToken(token, 'api://default');
   req.user = await assertUser(sub);
+}
+
+export async function requireUser(req: express.Request) {
+  if (!req.user) {
+    throw new JsonErrorResponse({ error: 'You must send an Authorization header' }, { statusCode: 400 });
+  }
 }

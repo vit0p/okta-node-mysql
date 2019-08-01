@@ -1,0 +1,70 @@
+import express from 'express';
+import { getManager } from 'typeorm';
+
+import { Restaurant } from '../models/restaurant';
+import { requireUser } from '../services/okta';
+import { IExpressWithJson, JsonErrorResponse } from 'express-with-json/dist';
+import { isRestaurantCreatedBy } from '../services/restaurant';
+
+export async function createRestaurant(req: express.Request) {
+  const { address, description, name, } = req.body;
+
+  const restaurant = new Restaurant();
+  restaurant.creatorId = req.user.id;
+  restaurant.address = address;
+  restaurant.description = description;
+  restaurant.name = name;
+
+  const manager = getManager();
+  return await manager.save(restaurant);
+}
+
+export async function removeRestaurant(req: express.Request) {
+  const { id } = req.params;
+  const manager = getManager();
+  const restaurant = await manager.findOneOrFail(Restaurant, id);
+
+  if (!isRestaurantCreatedBy(restaurant, req.user)) {
+    throw new JsonErrorResponse({ error: 'Forbidden' }, { statusCode: 403 });
+  }
+  await manager.remove(restaurant);
+  return { ok: true };
+}
+
+export async function getAllRestaurants() {
+  const manager = getManager();
+
+  return await manager.find(Restaurant);
+}
+
+export async function getRestaurant(req: express.Request) {
+  const { id } = req.params;
+  const manager = getManager();
+
+  return await manager.findOneOrFail(Restaurant, id);
+}
+
+export async function updateRestaurant(req: express.Request) {
+  const { id } = req.params;
+  const { address, description, name, } = req.body;
+  const manager = getManager();
+
+  const restaurant = await manager.findOneOrFail(Restaurant, id);
+  if (!isRestaurantCreatedBy(restaurant, req.user)) {
+    throw new JsonErrorResponse({ error: 'Forbidden' }, { statusCode: 403 });
+  }
+
+  restaurant.address = address;
+  restaurant.description = description;
+  restaurant.name = name;
+
+  return await manager.save(restaurant);
+}
+
+export default (app: IExpressWithJson) => {
+  app.postJson('/restaurants', requireUser, createRestaurant);
+  app.deleteJson('/restaurants/:id', requireUser, removeRestaurant);
+  app.getJson('/restaurants', getAllRestaurants);
+  app.getJson('/restaurants/:id', getRestaurant);
+  app.patchJson('/restaurants/:id', requireUser, updateRestaurant);
+}

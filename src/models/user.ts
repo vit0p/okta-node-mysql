@@ -11,8 +11,8 @@ export class User {
   oktaUserId: string;
 
   @OneToMany(() => Restaurant, restaurant => restaurant.creator)
-  restaurants: Array<Restaurant>;
+  restaurants: Promise<Array<Restaurant>>;
 
   @OneToMany(() => Rating, rating => rating.creator)
-  ratings: Array<Rating>;
+  ratings: Promise<Array<Rating>>;
 }

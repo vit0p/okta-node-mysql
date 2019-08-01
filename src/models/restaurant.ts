@@ -18,11 +18,17 @@ export class Restaurant {
   address: string;
 
   @OneToMany(() => FoodDish, foodDish => foodDish.restaurant)
-  foodDishes: Array<FoodDish>;
+  foodDishes: Promise<Array<FoodDish>>;
 
-  @ManyToOne(() => User, user => user.restaurants, { eager: true })
-  creator: User;
+  @Column()
+  creatorId: number;
+
+  @ManyToOne(() => User, user => user.restaurants)
+  creator: Promise<User>;
 
   @OneToMany(() => Rating, rating => rating.restaurant)
-  ratings: Array<Restaurant>;
+  ratings: Promise<Array<Restaurant>>;
+
+  @Column({ nullable: true })
+  averageRating: number;
 }

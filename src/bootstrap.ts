@@ -4,9 +4,9 @@ import withJson from 'express-with-json'
 import glob from 'glob';
 import path from 'path';
 import bodyParser from 'body-parser';
-import {authenticateUser, initializeAuthentication} from './services/okta';
-import { errorHandler } from './services/error-handler';
-import {entityNotFoundErrorHandler} from "./services/entity-not-found-error-handler";
+import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
+
+import { authenticateUser, initializeAuthentication } from './services/okta';
 
 const port = 3000;
 
@@ -16,6 +16,30 @@ function findAllControllers() {
     .map(controllerPath => require(controllerPath).default)
     .filter(applyController => applyController);
 }
+
+function errorHandler(error, req, res, next) {
+  if (!error) {
+    return next();
+  }
+
+
+  if (error) {
+    res.status(500);
+    res.json({ error: error.message });
+  }
+  console.error(error);
+}
+
+export function entityNotFoundErrorHandler(error, req, res, next) {
+  if (!(error instanceof EntityNotFoundError)) {
+    return next(error);
+  }
+
+  res.status(401);
+  res.json({ error: 'Not Found' });
+}
+
+
 
 export async function bootstrap() {
   await createConnection();

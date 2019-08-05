@@ -1,4 +1,4 @@
-import {Rating} from "../models/rating";
+import { Rating } from '../models/rating';
 import {
   EntityManager,
   EntitySubscriberInterface,
@@ -6,8 +6,8 @@ import {
   InsertEvent,
   RemoveEvent,
   UpdateEvent
-} from "typeorm";
-import {Restaurant} from "../models/restaurant";
+} from 'typeorm';
+import { Restaurant } from '../models/restaurant';
 
 async function getAverageRating(manager: EntityManager, restaurantId: number): Promise<number> {
   const response = await manager.query(

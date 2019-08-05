@@ -1,12 +1,17 @@
+import { getManager } from 'typeorm';
 import express from 'express';
+import { IExpressWithJson, JsonErrorResponse } from 'express-with-json';
 import { Rating } from '../models/rating';
-import { getManager } from "typeorm";
-import { IExpressWithJson } from 'express-with-json';
 import { requireUser } from '../services/okta';
 
 export async function createRating(req: express.Request) {
   const { restaurantId } = req.params;
-  const { rating: ratingNumber, text } = req.body;
+  const { rating: ratingString, text } = req.body;
+
+  const ratingNumber = parseInt(ratingString);
+  if (ratingNumber < 0 || ratingNumber > 5) {
+    throw new JsonErrorResponse({ error: 'Rating must be between 1 and 5' }, { statusCode: 400 });
+  }
 
   const rating = new Rating();
   rating.creatorId = req.user.id;
@@ -24,24 +29,6 @@ export async function getUserRating(req: express.Request) {
   return await getManager().findOneOrFail(Rating, { where: { restaurantId, creatorId } });
 }
 
-export async function updateRating(req: express.Request) {
-  const { restaurantId } = req.params;
-  const { rating: ratingNumber, text } = req.body;
-  const creatorId = req.user.id;
-
-  const manager = await getManager();
-
-  const rating = await manager.findOneOrFail(Rating, { where: { restaurantId, creatorId } });
-  if (ratingNumber !== undefined) {
-    rating.rating = ratingNumber;
-  }
-  if (text !== undefined) {
-    rating.text = text;
-  }
-
-  return await manager.save(rating);
-}
-
 export async function getRestaurantRatings(req: express.Request) {
   const { restaurantId } = req.params;
 
@@ -52,5 +39,4 @@ export default function(app: IExpressWithJson) {
   app.postJson('/restaurants/:restaurantId/ratings', requireUser, createRating);
   app.getJson('/restaurants/:restaurantId/ratings', getRestaurantRatings);
   app.getJson('/restaurants/:restaurantId/ratings/my', requireUser, getUserRating);
-  app.patchJson('/restaurants/:restaurantId/ratings/my', requireUser, updateRating);
 }

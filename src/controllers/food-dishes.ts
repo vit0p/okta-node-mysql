@@ -1,9 +1,9 @@
 import express from 'express';
-import {getManager} from "typeorm";
-import {FoodDish} from "../models/food-dish";
-import {IExpressWithJson} from "express-with-json/dist";
-import {requireUser} from "../services/okta";
-import {Restaurant} from "../models/restaurant";
+import { getManager } from 'typeorm';
+import { IExpressWithJson } from 'express-with-json';
+import { FoodDish } from '../models/food-dish';
+import { requireUser } from '../services/okta';
+import { Restaurant } from '../models/restaurant';
 
 export async function createFoodDish(req: express.Request) {
   const { restaurantId } = req.params;

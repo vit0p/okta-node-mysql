@@ -4,7 +4,11 @@ import { getManager } from 'typeorm';
 import { Restaurant } from '../models/restaurant';
 import { requireUser } from '../services/okta';
 import { IExpressWithJson, JsonErrorResponse } from 'express-with-json/dist';
-import { isRestaurantCreatedBy } from '../services/restaurant';
+import { User } from '../models/user';
+
+function isRestaurantCreatedBy(restaurant: Restaurant, user: User) {
+  return restaurant.creatorId === user.id;
+}
 
 export async function createRestaurant(req: express.Request) {
   const { address, description, name, } = req.body;

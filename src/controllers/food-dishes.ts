@@ -2,7 +2,7 @@ import express from 'express';
 import { getManager } from 'typeorm';
 import { IExpressWithJson } from 'express-with-json';
 import { FoodDish } from '../models/food-dish';
-import { requireUser } from '../services/okta';
+/* import { requireUser } from '../services/okta'; */
 import { Restaurant } from '../models/restaurant';
 
 export async function createFoodDish(req: express.Request) {
@@ -28,6 +28,6 @@ export async function getRestaurantFoodDishes(req: express.Request) {
 }
 
 export default (app: IExpressWithJson) => {
-  app.postJson('/restaurants/:restaurantId/food-dishes', requireUser, createFoodDish);
+  app.postJson('/restaurants/:restaurantId/food-dishes', createFoodDish);
   app.getJson('/restaurants/:restaurantId/food-dishes', getRestaurantFoodDishes);
 }

@@ -6,7 +6,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError';
 
-import { authenticateUser, initializeAuthentication } from './services/okta';
+/* import { authenticateUser, initializeAuthentication } from './services/okta'; */ 
 
 const port = 3000;
 
@@ -44,9 +44,9 @@ export function entityNotFoundErrorHandler(error, req, res, next) {
 export async function bootstrap() {
   await createConnection();
   const app = withJson(express());
-  app.useAsync(authenticateUser);
+  /* app.useAsync(authenticateUser); */
   app.use(bodyParser.json());
-  initializeAuthentication(app, port);
+  /* initializeAuthentication(app, port); */
 
   findAllControllers().map(applyController => applyController(app));
   app.use(entityNotFoundErrorHandler);

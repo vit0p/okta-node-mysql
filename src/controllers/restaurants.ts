@@ -2,7 +2,7 @@ import express from 'express';
 import { getManager } from 'typeorm';
 
 import { Restaurant } from '../models/restaurant';
-import { requireUser } from '../services/okta';
+/* import { requireUser } from '../services/okta'; */
 import { IExpressWithJson, JsonErrorResponse } from 'express-with-json/dist';
 import { User } from '../models/user';
 
@@ -14,7 +14,7 @@ export async function createRestaurant(req: express.Request) {
   const { address, description, name, } = req.body;
 
   const restaurant = new Restaurant();
-  restaurant.creatorId = req.user.id;
+  restaurant.creatorId = 1;
   restaurant.address = address;
   restaurant.description = description;
   restaurant.name = name;
@@ -28,9 +28,6 @@ export async function removeRestaurant(req: express.Request) {
   const manager = getManager();
   const restaurant = await manager.findOneOrFail(Restaurant, id);
 
-  if (!isRestaurantCreatedBy(restaurant, req.user)) {
-    throw new JsonErrorResponse({ error: 'Forbidden' }, { statusCode: 403 });
-  }
   await manager.remove(restaurant);
   return { ok: true };
 }
@@ -54,9 +51,6 @@ export async function updateRestaurant(req: express.Request) {
   const manager = getManager();
 
   const restaurant = await manager.findOneOrFail(Restaurant, id);
-  if (!isRestaurantCreatedBy(restaurant, req.user)) {
-    throw new JsonErrorResponse({ error: 'Forbidden' }, { statusCode: 403 });
-  }
 
   restaurant.address = address;
   restaurant.description = description;
@@ -66,9 +60,9 @@ export async function updateRestaurant(req: express.Request) {
 }
 
 export default (app: IExpressWithJson) => {
-  app.postJson('/restaurants', requireUser, createRestaurant);
-  app.deleteJson('/restaurants/:id', requireUser, removeRestaurant);
+  app.postJson('/restaurants', createRestaurant);
+  app.deleteJson('/restaurants/:id', removeRestaurant);
   app.getJson('/restaurants', getAllRestaurants);
   app.getJson('/restaurants/:id', getRestaurant);
-  app.patchJson('/restaurants/:id', requireUser, updateRestaurant);
+  app.patchJson('/restaurants/:id', updateRestaurant);
 }
